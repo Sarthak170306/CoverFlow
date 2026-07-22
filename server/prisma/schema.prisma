@@ -1,0 +1,22 @@
+// CoverFlow Prisma Schema
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Initial User model placeholder for sync with Clerk / insurance roles
+model User {
+  id        String   @id @default(uuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  role      String   @default("UNDERWRITER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

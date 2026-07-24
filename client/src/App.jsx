@@ -6,6 +6,8 @@ import Landing from './pages/Landing'
 import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage'
 import Dashboard from './pages/Dashboard'
+import Customers from './pages/Customers'
+import CustomerDetail from './pages/CustomerDetail'
 
 export default function App() {
   return (
@@ -22,6 +24,22 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/customers"
+              element={
+                <ProtectedRoute>
+                  <Customers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/customers/:id"
+              element={
+                <ProtectedRoute>
+                  <CustomerDetail />
                 </ProtectedRoute>
               }
             />

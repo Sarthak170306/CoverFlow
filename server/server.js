@@ -3,12 +3,16 @@ import express from 'express'
 import cors from 'cors'
 import { clerkMiddleware } from '@clerk/express'
 
+import authRoutes from './src/routes/authRoutes.js'
+import customerRoutes from './src/routes/customerRoutes.js'
+import policyRoutes from './src/routes/policyRoutes.js'
+
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// Middleware
+// Core Middlewares
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
@@ -16,22 +20,28 @@ app.use(cors({
 app.use(express.json())
 app.use(clerkMiddleware())
 
-// Routes
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     app: 'CoverFlow API',
+    version: '1.0.0',
     timestamp: new Date().toISOString()
   })
 })
 
-// Protected test route example
-app.get('/api/protected', (req, res) => {
-  const { userId } = req.auth
-  if (!userId) {
-    return res.status(401).json({ error: 'Unauthorized access' })
-  }
-  res.json({ message: 'Authenticated endpoint accessed', userId })
+// API Modular Routes
+app.use('/api/auth', authRoutes)
+app.use('/api/customers', customerRoutes)
+app.use('/api/policies', policyRoutes)
+
+// Centralized Error Handling Middleware
+app.use((err, req, res, next) => {
+  console.error('Unhandled Server Error:', err)
+  res.status(err.status || 500).json({
+    error: 'Internal Server Error',
+    message: err.message || 'An unexpected error occurred'
+  })
 })
 
 app.listen(PORT, () => {

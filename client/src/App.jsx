@@ -8,6 +8,8 @@ import SignUpPage from './pages/SignUpPage'
 import Dashboard from './pages/Dashboard'
 import Customers from './pages/Customers'
 import CustomerDetail from './pages/CustomerDetail'
+import Policies from './pages/Policies'
+import PolicyDetail from './pages/PolicyDetail'
 
 export default function App() {
   return (
@@ -40,6 +42,22 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <CustomerDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/policies"
+              element={
+                <ProtectedRoute>
+                  <Policies />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/policies/:id"
+              element={
+                <ProtectedRoute>
+                  <PolicyDetail />
                 </ProtectedRoute>
               }
             />

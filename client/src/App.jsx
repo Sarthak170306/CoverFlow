@@ -10,6 +10,7 @@ import Customers from './pages/Customers'
 import CustomerDetail from './pages/CustomerDetail'
 import Policies from './pages/Policies'
 import PolicyDetail from './pages/PolicyDetail'
+import Premiums from './pages/Premiums'
 
 export default function App() {
   return (
@@ -58,6 +59,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <PolicyDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/premiums"
+              element={
+                <ProtectedRoute>
+                  <Premiums />
                 </ProtectedRoute>
               }
             />

@@ -106,6 +106,8 @@ model PremiumPayment {
   paymentDate   DateTime      @default(now())
   amount        Float
   paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod String?       @default("BANK_TRANSFER")
+  transactionId String?
   createdAt     DateTime      @default(now())
 }
 

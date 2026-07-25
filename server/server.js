@@ -6,6 +6,7 @@ import { clerkMiddleware } from '@clerk/express'
 import authRoutes from './src/routes/authRoutes.js'
 import customerRoutes from './src/routes/customerRoutes.js'
 import policyRoutes from './src/routes/policyRoutes.js'
+import premiumRoutes from './src/routes/premiumRoutes.js'
 
 dotenv.config()
 
@@ -34,6 +35,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/customers', customerRoutes)
 app.use('/api/policies', policyRoutes)
+app.use('/api/premiums', premiumRoutes)
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {

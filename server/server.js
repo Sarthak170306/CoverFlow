@@ -7,6 +7,7 @@ import authRoutes from './src/routes/authRoutes.js'
 import customerRoutes from './src/routes/customerRoutes.js'
 import policyRoutes from './src/routes/policyRoutes.js'
 import premiumRoutes from './src/routes/premiumRoutes.js'
+import claimRoutes from './src/routes/claimRoutes.js'
 
 dotenv.config()
 
@@ -36,6 +37,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/customers', customerRoutes)
 app.use('/api/policies', policyRoutes)
 app.use('/api/premiums', premiumRoutes)
+app.use('/api/claims', claimRoutes)
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {

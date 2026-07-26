@@ -11,6 +11,7 @@ import CustomerDetail from './pages/CustomerDetail'
 import Policies from './pages/Policies'
 import PolicyDetail from './pages/PolicyDetail'
 import Premiums from './pages/Premiums'
+import Claims from './pages/Claims'
 
 export default function App() {
   return (
@@ -67,6 +68,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Premiums />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/claims"
+              element={
+                <ProtectedRoute>
+                  <Claims />
                 </ProtectedRoute>
               }
             />

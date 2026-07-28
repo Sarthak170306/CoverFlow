@@ -10,6 +10,7 @@ import premiumRoutes from './src/routes/premiumRoutes.js'
 import claimRoutes from './src/routes/claimRoutes.js'
 import dashboardRoutes from './src/routes/dashboardRoutes.js'
 import reportRoutes from './src/routes/reportRoutes.js'
+import settingRoutes from './src/routes/settingRoutes.js'
 
 dotenv.config()
 
@@ -24,12 +25,11 @@ app.use(cors({
 app.use(express.json())
 app.use(clerkMiddleware())
 
-// Health check endpoint
+// Health check endpoints
 app.get('/api/health', (req, res) => {
   res.json({
-    status: 'ok',
-    app: 'CoverFlow API',
-    version: '1.0.0',
+    status: 'active',
+    message: 'CoverFlow API is running smoothly',
     timestamp: new Date().toISOString()
   })
 })
@@ -42,6 +42,7 @@ app.use('/api/premiums', premiumRoutes)
 app.use('/api/claims', claimRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/reports', reportRoutes)
+app.use('/api/settings', settingRoutes)
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {

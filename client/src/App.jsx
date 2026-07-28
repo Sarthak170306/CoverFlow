@@ -13,6 +13,7 @@ import PolicyDetail from './pages/PolicyDetail'
 import Premiums from './pages/Premiums'
 import Claims from './pages/Claims'
 import Reports from './pages/Reports'
+import Settings from './pages/Settings'
 
 export default function App() {
   return (
@@ -93,6 +94,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Reports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
                 </ProtectedRoute>
               }
             />

@@ -140,10 +140,10 @@ export default function Dashboard() {
               <div className="text-sm font-bold flex items-center gap-2 mt-0.5">
                 {loadingHealth ? (
                   <span className="text-slate-400">Checking status...</span>
-                ) : apiHealth?.status === 'ok' ? (
+                ) : apiHealth?.status === 'active' || apiHealth?.status === 'ok' ? (
                   <span className="text-emerald-400 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    Online ({apiHealth.app})
+                    System Operational
                   </span>
                 ) : (
                   <span className="text-rose-400 flex items-center gap-1.5">

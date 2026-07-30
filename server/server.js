@@ -12,6 +12,7 @@ import dashboardRoutes from './src/routes/dashboardRoutes.js'
 import reportRoutes from './src/routes/reportRoutes.js'
 import settingRoutes from './src/routes/settingRoutes.js'
 import subscriptionRoutes from './src/routes/subscriptionRoutes.js'
+import stripeRoutes from './src/routes/stripeRoutes.js'
 
 dotenv.config()
 
@@ -45,6 +46,7 @@ app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/reports', reportRoutes)
 app.use('/api/settings', settingRoutes)
 app.use('/api/subscription', subscriptionRoutes)
+app.use('/api/stripe', stripeRoutes)
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {

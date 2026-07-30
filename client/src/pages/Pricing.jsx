@@ -6,9 +6,7 @@ import {
   Sparkles,
   ArrowRight,
   Loader2,
-  Building,
-  Star,
-  Check
+  AlertCircle
 } from 'lucide-react'
 import useApiClient from '../lib/api'
 
@@ -18,6 +16,8 @@ export default function Pricing() {
   const [billingCycle, setBillingCycle] = useState('monthly') // 'monthly' | 'annual'
   const [currentSub, setCurrentSub] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [checkoutLoadingPlan, setCheckoutLoadingPlan] = useState(null) // plan name or null
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     fetchSubscriptionStatus()
@@ -37,8 +37,25 @@ export default function Pricing() {
 
   const isAnnual = billingCycle === 'annual'
 
-  const handlePlanClick = (planName) => {
-    alert(`Button is fully clickable! You selected the ${planName} plan.`)
+  const handleCheckout = async (planName) => {
+    setCheckoutLoadingPlan(planName)
+    setError(null)
+    try {
+      const response = await api.post('/stripe/create-checkout-session', {
+        plan: planName,
+        cycle: billingCycle
+      })
+
+      if (response.data?.url) {
+        window.location.href = response.data.url
+      } else {
+        throw new Error('No checkout redirect URL received from server.')
+      }
+    } catch (err) {
+      console.error('Error initiating Stripe checkout session:', err)
+      setError(err.response?.data?.message || 'Failed to start Stripe checkout. Please try again.')
+      setCheckoutLoadingPlan(null)
+    }
   }
 
   return (
@@ -57,6 +74,14 @@ export default function Pricing() {
         <p className="text-slate-400 text-base sm:text-lg">
           Scale your enterprise insurance operations with automated policy lifecycles, intelligent FNOL claims processing, and portfolio analytics.
         </p>
+
+        {/* Error Feedback */}
+        {error && (
+          <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm flex items-center gap-3 max-w-xl mx-auto">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
 
         {/* Monthly vs Annual Toggle */}
         <div className="pt-6 flex items-center justify-center gap-4">
@@ -135,8 +160,8 @@ export default function Pricing() {
 
           <button
             type="button"
-            disabled={currentSub?.plan === 'Starter'}
-            onClick={() => handlePlanClick('Starter')}
+            disabled={currentSub?.plan === 'Starter' || checkoutLoadingPlan !== null}
+            onClick={() => handleCheckout('Starter')}
             className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all duration-200 relative z-50 pointer-events-auto cursor-pointer ${
               currentSub?.plan === 'Starter'
                 ? 'bg-slate-800/80 text-slate-400 border border-slate-700/50 cursor-not-allowed pointer-events-none'
@@ -200,11 +225,21 @@ export default function Pricing() {
 
           <button
             type="button"
-            onClick={() => handlePlanClick('Pro Enterprise')}
-            className="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:opacity-95 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all duration-200 relative z-50 pointer-events-auto cursor-pointer hover:scale-105 active:scale-95"
+            disabled={checkoutLoadingPlan !== null}
+            onClick={() => handleCheckout('Pro Enterprise')}
+            className="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:opacity-95 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all duration-200 relative z-50 pointer-events-auto cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Upgrade to Pro
-            <ArrowRight className="w-4 h-4" />
+            {checkoutLoadingPlan === 'Pro Enterprise' ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Redirecting to Checkout...
+              </>
+            ) : (
+              <>
+                Upgrade to Pro
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </div>
 
@@ -252,10 +287,18 @@ export default function Pricing() {
 
           <button
             type="button"
-            onClick={() => handlePlanClick('Carrier Enterprise')}
-            className="w-full py-3.5 px-4 rounded-xl font-bold text-sm text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center gap-2 transition-all duration-200 relative z-50 pointer-events-auto cursor-pointer hover:scale-105 active:scale-95"
+            disabled={checkoutLoadingPlan !== null}
+            onClick={() => handleCheckout('Carrier Enterprise')}
+            className="w-full py-3.5 px-4 rounded-xl font-bold text-sm text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center gap-2 transition-all duration-200 relative z-50 pointer-events-auto cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Contact Enterprise Sales
+            {checkoutLoadingPlan === 'Carrier Enterprise' ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Redirecting to Checkout...
+              </>
+            ) : (
+              'Contact Enterprise Sales'
+            )}
           </button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Navbar from './components/Navbar'
+import Sidebar from './components/Sidebar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Landing from './pages/Landing'
 import SignInPage from './pages/SignInPage'
@@ -14,13 +14,14 @@ import Premiums from './pages/Premiums'
 import Claims from './pages/Claims'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
+import Pricing from './pages/Pricing'
 
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
-        <Navbar />
-        <main className="flex-1">
+      <div className="min-h-screen flex bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+        <Sidebar />
+        <main className="flex-1 min-w-0 overflow-y-auto">
           <Routes>
             <Route path="/landing" element={<Landing />} />
             <Route path="/sign-in/*" element={<SignInPage />} />
@@ -102,6 +103,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pricing"
+              element={
+                <ProtectedRoute>
+                  <Pricing />
                 </ProtectedRoute>
               }
             />

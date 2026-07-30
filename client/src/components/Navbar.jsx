@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
-import { ShieldCheck, LayoutDashboard, Users, FileText, CreditCard, ShieldAlert, FileSpreadsheet, Settings, LogIn, UserPlus } from 'lucide-react'
+import { ShieldCheck, LayoutDashboard, Users, FileText, CreditCard, ShieldAlert, FileSpreadsheet, Settings, Zap, LogIn, UserPlus } from 'lucide-react'
 
 export default function Navbar() {
   return (
@@ -16,57 +16,67 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <nav className="flex items-center gap-4">
+        <nav className="flex items-center gap-3 sm:gap-4">
           <SignedIn>
             <Link
               to="/dashboard"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
             >
               <LayoutDashboard className="w-4 h-4 text-indigo-400" />
-              Dashboard
+              <span className="hidden sm:inline">Dashboard</span>
             </Link>
             <Link
               to="/customers"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
             >
               <Users className="w-4 h-4 text-indigo-400" />
-              Customers
+              <span className="hidden sm:inline">Customers</span>
             </Link>
             <Link
               to="/policies"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
             >
               <FileText className="w-4 h-4 text-indigo-400" />
-              Policies
+              <span className="hidden md:inline">Policies</span>
             </Link>
             <Link
               to="/premiums"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
             >
               <CreditCard className="w-4 h-4 text-indigo-400" />
-              Premiums
+              <span className="hidden lg:inline">Premiums</span>
             </Link>
             <Link
               to="/claims"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
             >
               <ShieldAlert className="w-4 h-4 text-amber-400" />
-              Claims
+              <span className="hidden lg:inline">Claims</span>
             </Link>
             <Link
               to="/reports"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
             >
               <FileSpreadsheet className="w-4 h-4 text-cyan-400" />
-              Reports
+              <span className="hidden xl:inline">Reports</span>
             </Link>
             <Link
               to="/settings"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all duration-200"
             >
               <Settings className="w-4 h-4 text-slate-400" />
-              Settings
+              <span className="hidden xl:inline">Settings</span>
             </Link>
+
+            {/* Distinct Upgrade Button */}
+            <Link
+              to="/pricing"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:opacity-95 shadow-md shadow-indigo-600/30 transition-all border border-indigo-400/40"
+            >
+              <Zap className="w-3.5 h-3.5 fill-white" />
+              <span>Upgrade</span>
+            </Link>
+
             <div className="pl-2 border-l border-slate-800">
               <UserButton afterSignOutUrl="/" />
             </div>

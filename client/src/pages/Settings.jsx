@@ -6,13 +6,22 @@ import {
   Server,
   RefreshCw,
   Clock,
-  Shield
+  Shield,
+  CreditCard,
+  ExternalLink,
+  Loader2,
+  AlertCircle
 } from 'lucide-react'
 import axios from 'axios'
+import useApiClient from '../lib/api'
 
 export default function Settings() {
+  const api = useApiClient()
+
   const [healthData, setHealthData] = useState(null)
   const [loadingHealth, setLoadingHealth] = useState(true)
+  const [portalLoading, setPortalLoading] = useState(false)
+  const [portalError, setPortalError] = useState(null)
 
   const fetchHealth = async () => {
     setLoadingHealth(true)
@@ -31,6 +40,23 @@ export default function Settings() {
     fetchHealth()
   }, [])
 
+  const handleOpenBillingPortal = async () => {
+    setPortalLoading(true)
+    setPortalError(null)
+    try {
+      const response = await api.post('/stripe/create-portal-session')
+      if (response.data?.url) {
+        window.location.href = response.data.url
+      } else {
+        throw new Error('No portal session URL returned by server.')
+      }
+    } catch (err) {
+      console.error('Error opening Stripe billing portal:', err)
+      setPortalError(err.response?.data?.message || 'Failed to open billing portal. Please try again.')
+      setPortalLoading(false)
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 p-4 md:p-8">
       {/* Header Banner */}
@@ -47,6 +73,14 @@ export default function Settings() {
           </p>
         </div>
       </div>
+
+      {/* Portal Error Alert */}
+      {portalError && (
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <span>{portalError}</span>
+        </div>
+      )}
 
       {/* System Status & Security Section (Top Cards) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -95,14 +129,36 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Security Notice Card */}
-        <div className="glass-panel rounded-3xl p-6 border border-slate-800 space-y-3 shadow-xl flex flex-col justify-center">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Shield className="w-5 h-5 text-cyan-400" /> Account Security Notice
-          </h3>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Your profile credentials, password updates, 2FA, and active sessions are securely managed via Clerk Authentication with enterprise SOC 2 Type II compliance.
-          </p>
+        {/* Security & Billing Portal Card */}
+        <div className="glass-panel rounded-3xl p-6 border border-slate-800 space-y-4 shadow-xl flex flex-col justify-between">
+          <div className="space-y-3">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-indigo-400" /> Enterprise Billing Portal
+            </h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Manage active subscription plans, payment methods, download PDF invoices, and review payment transaction history.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            disabled={portalLoading}
+            onClick={handleOpenBillingPortal}
+            className="w-full py-3 px-4 rounded-xl font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {portalLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Opening Portal...
+              </>
+            ) : (
+              <>
+                <CreditCard className="w-4 h-4" />
+                Manage Billing & Subscriptions
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+              </>
+            )}
+          </button>
         </div>
       </div>
 

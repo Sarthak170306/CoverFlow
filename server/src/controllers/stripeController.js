@@ -58,3 +58,75 @@ export const createCheckoutSession = async (req, res) => {
     return res.status(500).json({ error: 'Internal Server Error', message: error.message })
   }
 }
+
+/**
+ * POST /api/stripe/create-portal-session
+ * Initializes a Stripe Billing Portal session for managing subscriptions and payment methods
+ */
+export const createPortalSession = async (req, res) => {
+  try {
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+    const stripeSecret = process.env.STRIPE_SECRET_KEY
+    const customerId = req.body?.customerId || 'cus_dummy123'
+
+    if (stripeSecret && stripeSecret.startsWith('sk_')) {
+      const stripe = new Stripe(stripeSecret)
+
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: `${clientUrl}/settings`
+      })
+
+      return res.status(200).json({ url: portalSession.url })
+    }
+
+    // Fallback Mock Portal URL for development/demo testing
+    const mockPortalUrl = `${clientUrl}/settings?portal=active&customer=${customerId}`
+    return res.status(200).json({ url: mockPortalUrl })
+  } catch (error) {
+    console.error('Error creating Stripe portal session:', error)
+    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+  }
+}
+
+/**
+ * POST /api/stripe/webhook
+ * Public webhook endpoint for processing Stripe asynchronous payment and subscription events
+ */
+export const handleWebhook = async (req, res) => {
+  const sig = req.headers['stripe-signature']
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  let event
+
+  try {
+    if (webhookSecret && sig) {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
+      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret)
+    } else {
+      // Parse raw JSON body if signature verification secret is not configured
+      const payloadString = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : JSON.stringify(req.body)
+      event = JSON.parse(payloadString)
+    }
+
+    // Process Stripe event types
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object
+        console.log('✅ [Stripe Webhook] checkout.session.completed received for customer:', session.customer)
+        break
+      }
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object
+        console.log('🔄 [Stripe Webhook] customer.subscription.updated received for subscription:', subscription.id)
+        break
+      }
+      default:
+        console.log(`ℹ️ [Stripe Webhook] Unhandled event type: ${event.type}`)
+    }
+
+    return res.status(200).json({ received: true })
+  } catch (error) {
+    console.error('❌ Webhook error:', error.message)
+    return res.status(400).send(`Webhook Error: ${error.message}`)
+  }
+}

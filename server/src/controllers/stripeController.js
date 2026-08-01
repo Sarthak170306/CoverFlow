@@ -1,32 +1,42 @@
 import Stripe from 'stripe'
 
+// Initialize Stripe SDK instance with environment secret key if available
+const getStripeInstance = () => {
+  const secretKey = process.env.STRIPE_SECRET_KEY
+  if (secretKey && secretKey.startsWith('sk_')) {
+    return new Stripe(secretKey)
+  }
+  return null
+}
+
 /**
  * POST /api/stripe/create-checkout-session
- * Initializes a Stripe checkout session for CoverFlow plan upgrades
+ * Initializes a Stripe checkout session using priceId or plan parameters
  */
 export const createCheckoutSession = async (req, res) => {
   try {
-    const { plan = 'Pro Enterprise', cycle = 'monthly' } = req.body
+    const { priceId, plan = 'Pro Enterprise', cycle = 'monthly' } = req.body
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+    const stripe = getStripeInstance()
 
-    const stripeSecret = process.env.STRIPE_SECRET_KEY
+    // If Stripe Secret Key is configured, initialize real Stripe Checkout Session
+    if (stripe) {
+      let lineItems = []
 
-    // If Stripe Secret Key is present and valid, initialize real Stripe Checkout Session
-    if (stripeSecret && stripeSecret.startsWith('sk_')) {
-      const stripe = new Stripe(stripeSecret)
-
-      const isAnnual = cycle === 'annual'
-      let unitAmount = 1900 // $19.00 default for Pro Monthly
-
-      if (plan === 'Carrier Enterprise') {
-        unitAmount = isAnnual ? 7900 : 9900 // $79 or $99
+      if (priceId && priceId.startsWith('price_')) {
+        lineItems = [{ price: priceId, quantity: 1 }]
       } else {
-        unitAmount = isAnnual ? 1500 : 1900 // $15 or $19
-      }
+        // Fallback dynamic price_data construction
+        const isAnnual = cycle === 'annual'
+        let unitAmount = 1900 // $19.00 default for Pro Monthly
 
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [
+        if (plan === 'Carrier Enterprise') {
+          unitAmount = isAnnual ? 7900 : 9900 // $79 or $99
+        } else {
+          unitAmount = isAnnual ? 1500 : 1900 // $15 or $19
+        }
+
+        lineItems = [
           {
             price_data: {
               currency: 'usd',
@@ -41,7 +51,12 @@ export const createCheckoutSession = async (req, res) => {
             },
             quantity: 1
           }
-        ],
+        ]
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: lineItems,
         mode: 'subscription',
         success_url: `${clientUrl}/settings?payment=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${clientUrl}/pricing?payment=cancelled`
@@ -50,28 +65,29 @@ export const createCheckoutSession = async (req, res) => {
       return res.status(200).json({ url: session.url })
     }
 
-    // Fallback Mock URL for development/demo testing when real Stripe credentials are not present
+    // Fallback Mock URL for development/demo testing when secret key is not configured
     const mockSessionUrl = `${clientUrl}/settings?payment=success&plan=${encodeURIComponent(plan)}&cycle=${cycle}`
     return res.status(200).json({ url: mockSessionUrl })
   } catch (error) {
-    console.error('Error creating Stripe checkout session:', error)
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    console.error('❌ Stripe API Error [create-checkout-session]:', error)
+    return res.status(error.statusCode || 400).json({
+      error: error.type || 'StripeAPIError',
+      message: error.message || 'Failed to create Stripe checkout session'
+    })
   }
 }
 
 /**
  * POST /api/stripe/create-portal-session
- * Initializes a Stripe Billing Portal session for managing subscriptions and payment methods
+ * Initializes a Stripe Billing Portal session for managing customer subscriptions & payment methods
  */
 export const createPortalSession = async (req, res) => {
   try {
+    const { customerId = 'cus_dummy123' } = req.body
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
-    const stripeSecret = process.env.STRIPE_SECRET_KEY
-    const customerId = req.body?.customerId || 'cus_dummy123'
+    const stripe = getStripeInstance()
 
-    if (stripeSecret && stripeSecret.startsWith('sk_')) {
-      const stripe = new Stripe(stripeSecret)
-
+    if (stripe) {
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customerId,
         return_url: `${clientUrl}/settings`
@@ -81,11 +97,14 @@ export const createPortalSession = async (req, res) => {
     }
 
     // Fallback Mock Portal URL for development/demo testing
-    const mockPortalUrl = `${clientUrl}/settings?portal=active&customer=${customerId}`
+    const mockPortalUrl = `${clientUrl}/settings?portal=active&customer=${encodeURIComponent(customerId)}`
     return res.status(200).json({ url: mockPortalUrl })
   } catch (error) {
-    console.error('Error creating Stripe portal session:', error)
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    console.error('❌ Stripe API Error [create-portal-session]:', error)
+    return res.status(error.statusCode || 400).json({
+      error: error.type || 'StripeAPIError',
+      message: error.message || 'Failed to create Stripe billing portal session'
+    })
   }
 }
 
@@ -96,11 +115,11 @@ export const createPortalSession = async (req, res) => {
 export const handleWebhook = async (req, res) => {
   const sig = req.headers['stripe-signature']
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  const stripe = getStripeInstance()
   let event
 
   try {
-    if (webhookSecret && sig) {
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
+    if (stripe && webhookSecret && sig) {
       event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret)
     } else {
       // Parse raw JSON body if signature verification secret is not configured

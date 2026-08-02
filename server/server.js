@@ -12,8 +12,6 @@ import dashboardRoutes from './src/routes/dashboardRoutes.js'
 import reportRoutes from './src/routes/reportRoutes.js'
 import settingRoutes from './src/routes/settingRoutes.js'
 import subscriptionRoutes from './src/routes/subscriptionRoutes.js'
-import stripeRoutes from './src/routes/stripeRoutes.js'
-import { handleWebhook } from './src/controllers/stripeController.js'
 
 dotenv.config()
 
@@ -25,11 +23,6 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
 }))
-
-// CRITICAL: Public Stripe Webhook route with raw body parser BEFORE express.json()
-app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handleWebhook)
-
-// Global body parser & Clerk auth middleware for API routes
 app.use(express.json())
 app.use(clerkMiddleware())
 
@@ -52,7 +45,6 @@ app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/reports', reportRoutes)
 app.use('/api/settings', settingRoutes)
 app.use('/api/subscription', subscriptionRoutes)
-app.use('/api/stripe', stripeRoutes)
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {

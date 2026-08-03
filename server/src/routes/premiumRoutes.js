@@ -1,20 +1,14 @@
 import { Router } from 'express'
-import { requireAuth } from '../middleware/auth.js'
-import {
-  getPremiumPayments,
-  createPremiumPayment,
-  getPaymentsByPolicyId,
-  updatePaymentStatus
-} from '../controllers/premiumController.js'
+import { recordPayment } from '../controllers/premiumController.js'
+import { validateRequest } from '../middleware/validateRequest.js'
+import { premiumSchema } from '../validations/premiumSchema.js'
 
 const router = Router()
 
-// All premium payment routes require Clerk authentication
-router.use(requireAuth)
-
-router.get('/', getPremiumPayments)
-router.post('/', createPremiumPayment)
-router.get('/policy/:policyId', getPaymentsByPolicyId)
-router.put('/:id/status', updatePaymentStatus)
+/**
+ * POST /api/premiums/pay
+ * Validates request body with premiumSchema and records payment in database
+ */
+router.post('/pay', validateRequest(premiumSchema), recordPayment)
 
 export default router

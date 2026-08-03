@@ -12,6 +12,7 @@ import dashboardRoutes from './src/routes/dashboardRoutes.js'
 import reportRoutes from './src/routes/reportRoutes.js'
 import settingRoutes from './src/routes/settingRoutes.js'
 import subscriptionRoutes from './src/routes/subscriptionRoutes.js'
+import { errorHandler } from './src/middleware/errorHandler.js'
 
 dotenv.config()
 
@@ -26,7 +27,7 @@ app.use(cors({
 app.use(express.json())
 app.use(clerkMiddleware())
 
-// Health check endpoints
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'active',
@@ -46,14 +47,8 @@ app.use('/api/reports', reportRoutes)
 app.use('/api/settings', settingRoutes)
 app.use('/api/subscription', subscriptionRoutes)
 
-// Centralized Error Handling Middleware
-app.use((err, req, res, next) => {
-  console.error('Unhandled Server Error:', err)
-  res.status(err.status || 500).json({
-    error: 'Internal Server Error',
-    message: err.message || 'An unexpected error occurred'
-  })
-})
+// Global Error Handling Middleware (Mounted at the bottom of server.js)
+app.use(errorHandler)
 
 app.listen(PORT, () => {
   console.log(`🚀 CoverFlow API Server running on port ${PORT}`)

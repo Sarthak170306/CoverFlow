@@ -1,9 +1,47 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
-import { ShieldCheck, LayoutDashboard, Users, FileText, CreditCard, ShieldAlert, FileSpreadsheet, Settings, Zap, LogIn, UserPlus } from 'lucide-react'
+import {
+  ShieldCheck,
+  LayoutDashboard,
+  Users,
+  FileText,
+  CreditCard,
+  ShieldAlert,
+  FileSpreadsheet,
+  Settings,
+  Zap,
+  LogIn,
+  UserPlus,
+  Sun,
+  Moon
+} from 'lucide-react'
 
 export default function Navbar() {
+  const [isDark, setIsDark] = useState(() => {
+    return localStorage.getItem('theme') === 'dark' || document.documentElement.classList.contains('dark')
+  })
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [isDark])
+
+  const toggleDarkMode = () => {
+    const nextDark = !isDark
+    setIsDark(nextDark)
+    if (nextDark) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }
+
   return (
     <header className="sticky top-0 z-50 glass-panel border-b border-slate-800/60 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -77,12 +115,32 @@ export default function Navbar() {
               <span>Upgrade</span>
             </Link>
 
+            {/* Dark Mode Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 text-slate-300 hover:text-white transition-all cursor-pointer"
+              title="Toggle Dark / Light Mode"
+            >
+              {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-400" />}
+            </button>
+
             <div className="pl-2 border-l border-slate-800">
               <UserButton afterSignOutUrl="/" />
             </div>
           </SignedIn>
 
           <SignedOut>
+            {/* Dark Mode Toggle for SignedOut */}
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 text-slate-300 hover:text-white transition-all cursor-pointer"
+              title="Toggle Dark / Light Mode"
+            >
+              {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-400" />}
+            </button>
+
             <Link
               to="/sign-in"
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all duration-200"

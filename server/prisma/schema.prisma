@@ -33,12 +33,6 @@ enum ClaimStatus {
   REJECTED
 }
 
-enum PaymentStatus {
-  PAID
-  OVERDUE
-  PENDING
-}
-
 // ==========================================
 // MODELS
 // ==========================================
@@ -52,7 +46,7 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  customer  Customer?
+  customer Customer?
 }
 
 model Customer {
@@ -84,8 +78,8 @@ model Policy {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
-  claims        Claim[]
-  payments      PremiumPayment[]
+  claims          Claim[]
+  premiumPayments PremiumPayment[]
 }
 
 model Claim {
@@ -100,15 +94,12 @@ model Claim {
 }
 
 model PremiumPayment {
-  id            String        @id @default(uuid())
+  id            String   @id @default(uuid())
   policyId      String
-  policy        Policy        @relation(fields: [policyId], references: [id], onDelete: Cascade)
-  paymentDate   DateTime      @default(now())
+  policy        Policy   @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  paymentDate   DateTime @default(now())
   amount        Float
-  paymentStatus PaymentStatus @default(PENDING)
-  paymentMethod String?       @default("BANK_TRANSFER")
-  transactionId String?
-  createdAt     DateTime      @default(now())
+  paymentStatus String   @default("PAID")
 }
 
 model Document {

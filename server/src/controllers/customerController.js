@@ -4,7 +4,7 @@ import prisma from '../lib/prisma.js'
  * GET /api/customers
  * Retrieves paginated customers with optional search filtering by name or email
  */
-export const getCustomers = async (req, res) => {
+export const getCustomers = async (req, res, next) => {
   try {
     const search = req.query.search || ''
     const page = parseInt(req.query.page) || 1
@@ -49,7 +49,7 @@ export const getCustomers = async (req, res) => {
     })
   } catch (error) {
     console.error('Error fetching customers:', error)
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    next(error)
   }
 }
 
@@ -57,7 +57,7 @@ export const getCustomers = async (req, res) => {
  * POST /api/customers
  * Creates a new customer record
  */
-export const createCustomer = async (req, res) => {
+export const createCustomer = async (req, res, next) => {
   try {
     const { name, email, phone, dob, address, userId } = req.body
 
@@ -100,7 +100,7 @@ export const createCustomer = async (req, res) => {
         message: 'Customer with this email address already exists'
       })
     }
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    next(error)
   }
 }
 
@@ -108,7 +108,7 @@ export const createCustomer = async (req, res) => {
  * GET /api/customers/:id
  * Retrieves details for a single customer along with policies & documents history
  */
-export const getCustomerById = async (req, res) => {
+export const getCustomerById = async (req, res, next) => {
   try {
     const { id } = req.params
 
@@ -119,7 +119,7 @@ export const getCustomerById = async (req, res) => {
         policies: {
           include: {
             claims: true,
-            payments: true
+            premiumPayments: true
           },
           orderBy: { createdAt: 'desc' }
         },
@@ -136,7 +136,7 @@ export const getCustomerById = async (req, res) => {
     return res.status(200).json({ customer })
   } catch (error) {
     console.error('Error fetching customer by ID:', error)
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    next(error)
   }
 }
 
@@ -144,7 +144,7 @@ export const getCustomerById = async (req, res) => {
  * PUT /api/customers/:id
  * Updates an existing customer record
  */
-export const updateCustomer = async (req, res) => {
+export const updateCustomer = async (req, res, next) => {
   try {
     const { id } = req.params
     const { name, email, phone, dob, address } = req.body
@@ -182,7 +182,7 @@ export const updateCustomer = async (req, res) => {
     if (error.code === 'P2002') {
       return res.status(409).json({ error: 'Conflict', message: 'Another customer with this email address already exists' })
     }
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    next(error)
   }
 }
 
@@ -190,7 +190,7 @@ export const updateCustomer = async (req, res) => {
  * DELETE /api/customers/:id
  * Deletes a customer record
  */
-export const deleteCustomer = async (req, res) => {
+export const deleteCustomer = async (req, res, next) => {
   try {
     const { id } = req.params
 
@@ -204,6 +204,6 @@ export const deleteCustomer = async (req, res) => {
     return res.status(200).json({ message: 'Customer deleted successfully' })
   } catch (error) {
     console.error('Error deleting customer:', error)
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    next(error)
   }
 }

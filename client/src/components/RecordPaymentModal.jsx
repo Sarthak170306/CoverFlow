@@ -74,14 +74,27 @@ export default function RecordPaymentModal({ isOpen, onClose, onSuccess, presele
     setSubmitting(true)
     setError(null)
 
-    if (!formData.policyId || !formData.amount || !formData.paymentDate) {
+    if (!formData.policyId || !formData.amount) {
       setError('Please select a policy and enter the payment amount.')
       setSubmitting(false)
       return
     }
 
+    const parsedAmount = parseFloat(formData.amount)
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      setError('Payment amount must be a positive number.')
+      setSubmitting(false)
+      return
+    }
+
     try {
-      await api.post('/premiums', formData)
+      // POST request to /premiums/pay matching backend route
+      const payload = {
+        policyId: formData.policyId,
+        amount: parsedAmount
+      }
+
+      await api.post('/premiums/pay', payload)
       onSuccess()
       onClose()
     } catch (err) {

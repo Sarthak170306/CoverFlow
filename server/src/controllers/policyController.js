@@ -13,7 +13,7 @@ const generatePolicyNumber = () => {
  * GET /api/policies
  * Retrieves all policies with status filtering, search by policy number/type/customer name, and pagination
  */
-export const getPolicies = async (req, res) => {
+export const getPolicies = async (req, res, next) => {
   try {
     const status = req.query.status || ''
     const search = req.query.search || ''
@@ -51,7 +51,7 @@ export const getPolicies = async (req, res) => {
             select: { id: true, name: true, email: true, phone: true }
           },
           _count: {
-            select: { claims: true, payments: true }
+            select: { claims: true, premiumPayments: true }
           }
         },
         orderBy: { createdAt: 'desc' }
@@ -71,7 +71,7 @@ export const getPolicies = async (req, res) => {
     })
   } catch (error) {
     console.error('Error fetching policies:', error)
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    next(error)
   }
 }
 
@@ -79,7 +79,7 @@ export const getPolicies = async (req, res) => {
  * POST /api/policies
  * Creates a new policy linked to a customer
  */
-export const createPolicy = async (req, res) => {
+export const createPolicy = async (req, res, next) => {
   try {
     const { customerId, policyType, policyNumber, premiumAmount, startDate, endDate, status } = req.body
 
@@ -138,15 +138,15 @@ export const createPolicy = async (req, res) => {
     if (error.code === 'P2002') {
       return res.status(409).json({ error: 'Conflict', message: 'A policy with this policyNumber already exists' })
     }
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    next(error)
   }
 }
 
 /**
  * GET /api/policies/:id
- * Retrieves details for a single policy with customer info, claims, and payments
+ * Retrieves details for a single policy with customer info, claims, and premiumPayments
  */
-export const getPolicyById = async (req, res) => {
+export const getPolicyById = async (req, res, next) => {
   try {
     const { id } = req.params
 
@@ -157,7 +157,7 @@ export const getPolicyById = async (req, res) => {
         claims: {
           orderBy: { submissionDate: 'desc' }
         },
-        payments: {
+        premiumPayments: {
           orderBy: { paymentDate: 'desc' }
         }
       }
@@ -170,7 +170,7 @@ export const getPolicyById = async (req, res) => {
     return res.status(200).json({ policy })
   } catch (error) {
     console.error('Error fetching policy by ID:', error)
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    next(error)
   }
 }
 
@@ -178,7 +178,7 @@ export const getPolicyById = async (req, res) => {
  * PUT /api/policies/:id/renew
  * Renews policy by extending end date and setting status to ACTIVE
  */
-export const renewPolicy = async (req, res) => {
+export const renewPolicy = async (req, res, next) => {
   try {
     const { id } = req.params
     const { endDate } = req.body
@@ -218,7 +218,7 @@ export const renewPolicy = async (req, res) => {
     })
   } catch (error) {
     console.error('Error renewing policy:', error)
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    next(error)
   }
 }
 
@@ -226,7 +226,7 @@ export const renewPolicy = async (req, res) => {
  * PUT /api/policies/:id/cancel
  * Cancels a policy by setting its status to CANCELLED
  */
-export const cancelPolicy = async (req, res) => {
+export const cancelPolicy = async (req, res, next) => {
   try {
     const { id } = req.params
 
@@ -251,6 +251,6 @@ export const cancelPolicy = async (req, res) => {
     })
   } catch (error) {
     console.error('Error cancelling policy:', error)
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message })
+    next(error)
   }
 }
